@@ -1,20 +1,24 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const userRouter = require("./routes/userRouter");
+const errorHandler = require("./middleware/errorHandlerMiddleware");
 const app = express();
 
-//connect to MongoDB
+//!connect to MongoDB
 mongoose
-    .connect()
+    .connect("mongodb+srv://sewmisenarath:vqNR2YhfP39Rf1RT@cluster2.jr9ix.mongodb.net/FinanceTracker")
     .then(() => console.log("MongoDB connected"))
     .catch((e) =>console.log(e));
 
-
-//Routes
+//!middleware
+app.use(express.json()) //*pass incoming json data
+//!Routes
 app.use("/",userRouter);
+//!error
+app.use(errorHandler);
 
-//start the server
+//!start the server
 const PORT = process.env.PORT || 8000;
 app.listen(PORT,
-    () => console.log(`Server is running on the PORT ${PORT}...!`)
+    () => console.log(`Server is running on PORT ${PORT}...!`)
 );
