@@ -76,15 +76,50 @@ const userCtr = {
     }),
     //!profile
     profile: asyncHandler(async(req, res)=>{
+        
         //find the user
-        const user=await User.findById("67c2bb2c86fd398bf98e852d");
+        console.log(req.user);
+        const user=await User.findById(req.user);
         
         if(!user){
             throw new Error ("User not found");
         }
         //send the response
         res.json({ username:user.username, email:user.email });
-    })
+    }),
+
+    //!update password
+    changeUserPassword: asyncHandler(async (req, res)=>{
+        const {newPassword} = req.body;
+
+        //find the user
+        const user =await User.findById(req.user);
+        if(!user){
+            throw new Error ("User not found");
+        }
+
+        //hash the new password before saving
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        user.password = hashedPassword;
+
+        //resave
+        await user.save();
+
+        //send the response
+        res.json({ message:"Password changed successfully" });
+    }),
+    //!update user profile
+    updateUserProfile: asyncHandler(async (req, res)=>{
+        const {email, username} = req.body;
+
+        
+
+    
+
+        //send the response
+        res.json({ message:"Password changed successfully" });
+    }),
 
 };
 
