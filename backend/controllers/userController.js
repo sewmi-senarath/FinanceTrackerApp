@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../model/User");
-const { use } = require("../routes/userRouter");
+//const { use } = require("../routes/userRouter");
 
 
 //!User registration
@@ -113,12 +113,15 @@ const userCtr = {
     updateUserProfile: asyncHandler(async (req, res)=>{
         const {email, username} = req.body;
 
-        
-
-    
-
+        const updatedUser = await User.findByIdAndUpdate(req.user, {
+            username,
+            email,
+        },{
+            new:true,
+        }
+    );
         //send the response
-        res.json({ message:"Password changed successfully" });
+        res.json({ message:"User Profile updated successfully", updatedUser});
     }),
 
 };

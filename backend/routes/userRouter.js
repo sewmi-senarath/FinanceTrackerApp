@@ -16,4 +16,16 @@ userRouter.get("/api/v1/users/profile",
     userCtr.profile
 );
 
+//!update password
+userRouter.put("/api/v1/users/changePassword", 
+    isAuthenticated, 
+    userCtr.changeUserPassword
+);
+
+//!update profile
+userRouter.put("/api/v1/users/updateProfile", 
+    isAuthenticated, 
+    userCtr.updateUserProfile
+);
+
 module.exports = userRouter;
