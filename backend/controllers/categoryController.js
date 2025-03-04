@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Category = require("../model/Category");
+const Transaction = require("../model/Transaction");
 
 const categoryCtr = {
     //!add
@@ -46,13 +47,55 @@ const categoryCtr = {
     }),
     //!update
     update: asyncHandler(async(req, res)=>{
+        const {categoryId} = req.params;
+        const {type , name} = req.body;
+        const normalizedName = name.toLowerCase();
+        const category = await Category.findById(categoryId);
+
+        if(!category && category.user.toString() !== req.user.toString()){
+            throw new Error("Category not found or User not authenticated");
+        }
+
+        const oldName = category.name;
+
+        //update category properties
+        category.name = normalizedName || category.name;
+        category.type = type || category.type;
+        const updatedCategory = await category.save();
         
-        
+        //update affected transactions
+        if (oldName !== updatedCategory.name){
+            await Transaction.updateMany(
+            {
+                user: req.user,
+                category: oldName,
+            },
+            { $set:{ category: updatedCategory.name }}
+            );
+        }
+        res.json(updatedCategory);
     }),
 
     //!delete
     delete: asyncHandler(async (req, res)=>{
-       
+        const category = await Category.findById(req.params.id);
+
+        if(category && category.user.toString() === req.user.toString()){
+
+            //update transactions that have this category
+            const defaultCategory = "Uncategorized";
+            await Transaction.updateMany(
+                { user: req.user, category: category.name },
+                { $set: {category: defaultCategory }}
+            );
+
+            //remove category
+            await Category.findByIdAndDelete(req.params.id);
+            res.json({ message: "category removed successfully" });
+        }else{
+            res.json({ message: "category not found or user not authorized" });
+        }
+
     }),
 
 };

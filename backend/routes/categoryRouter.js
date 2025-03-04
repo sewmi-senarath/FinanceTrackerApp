@@ -16,6 +16,18 @@ categoryRouter.get("/api/v1/categories/lists",
     categoryCtr.lists
 );
 
+//!update
+categoryRouter.put("/api/v1/categories/update/:categoryId", 
+    isAuthenticated,
+    categoryCtr.update
+);
+
+//!delete
+categoryRouter.delete("/api/v1/categories/delete/:id", 
+    isAuthenticated,
+    categoryCtr.delete
+);
+
 
 
 module.exports = categoryRouter;
