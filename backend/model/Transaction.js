@@ -21,6 +21,10 @@ const transactionSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
+        currency: { // Add currency field
+            type: String, 
+            required: true 
+        }, 
         date: {
             type: Date,
             default: Date.now,

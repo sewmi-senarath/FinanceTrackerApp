@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../model/User");
-//const { use } = require("../routes/userRouter");
+require('dotenv').config();
 
 
 //!User registration
@@ -10,7 +10,7 @@ const User = require("../model/User");
 const userCtr = {
     //!Register
     register: asyncHandler(async(req, res) =>{
-        const{username, email, password} = req.body;
+        const{username, email, password, role, currency} = req.body;
         
         //!validate
         if(!username || !email || !password){
@@ -20,7 +20,7 @@ const userCtr = {
         //!check if user exists
         const userExists = await User.findOne({ email });
         if (userExists){
-            throw new Error("User already exists"); 
+            throw new Error("User already exists");
         }
 
         //!Hash the user password
@@ -32,6 +32,8 @@ const userCtr = {
             email,
             username,
             password: hashedPassword,
+            role: role || "user", // Default to "user" if role is not provided
+            currency: currency || "USD",
         });
 
         //!send the response
@@ -39,6 +41,8 @@ const userCtr = {
             username: userCreated.username,
             email:userCreated.email,
             id:userCreated._id,
+            role: userCreated.role, // Include role in the response
+            currency: userCreated.currency,
         });
     }),
 
@@ -60,9 +64,10 @@ const userCtr = {
         }
 
         //generate a token
-        const token = jwt.sign({ id: user._id }, "financeTrackerKey",{
-            expiresIn: "365d",
-        });
+        const token = jwt.sign({ id: user._id, role: user.role },
+            process.env.JWT_SECRET ,
+            { expiresIn: "365d",}
+        );
 
         //send the response
         res.json({
@@ -71,6 +76,7 @@ const userCtr = {
             id: user._id,
             email: user.email,
             username: user.username,
+            role: user.role, // Include role in the response
         });
 
     }),
@@ -79,13 +85,17 @@ const userCtr = {
         
         //find the user
         console.log(req.user);
-        const user=await User.findById(req.user);
+        const user=await User.findById(req.user.id);
         
         if(!user){
             throw new Error ("User not found");
         }
         //send the response
-        res.json({ username:user.username, email:user.email });
+        res.json({ 
+            username:user.username, 
+            email:user.email,
+            role: user.role,
+        });
     }),
 
     //!update password
@@ -93,7 +103,7 @@ const userCtr = {
         const {newPassword} = req.body;
 
         //find the user
-        const user =await User.findById(req.user);
+        const user =await User.findById(req.user.id);
         if(!user){
             throw new Error ("User not found");
         }
@@ -109,19 +119,42 @@ const userCtr = {
         //send the response
         res.json({ message:"Password changed successfully" });
     }),
+
     //!update user profile
     updateUserProfile: asyncHandler(async (req, res)=>{
-        const {email, username} = req.body;
+        const {email, username, currency} = req.body;
 
-        const updatedUser = await User.findByIdAndUpdate(req.user, {
-            username,
-            email,
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id, 
+            {
+                username,
+                email,
+                currency
         },{
             new:true,
         }
     );
         //send the response
         res.json({ message:"User Profile updated successfully", updatedUser});
+    }),
+
+
+    //edits
+
+    //! Get all users (Admin only)
+    getAllUsersAdminOnly: asyncHandler(async (req, res) => {
+        const users = await User.find({}).select("-password"); // Exclude passwords
+        res.json(users);
+    }),
+
+    //! Delete a user (Admin only)
+    deleteUserAdminOnly: asyncHandler(async (req, res) => {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            throw new Error("User not found");
+        }
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: "User deleted successfully" });
     }),
 
 };
