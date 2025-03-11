@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../model/User");
-//const { use } = require("../routes/userRouter");
+require('dotenv').config();
 
 
 //!User registration
@@ -10,7 +10,7 @@ const User = require("../model/User");
 const userCtr = {
     //!Register
     register: asyncHandler(async(req, res) =>{
-        const{username, email, password} = req.body;
+        const{username, email, password, role} = req.body;
         
         //!validate
         if(!username || !email || !password){
@@ -32,6 +32,7 @@ const userCtr = {
             email,
             username,
             password: hashedPassword,
+            role: role || "user", // Default to "user" if role is not provided
         });
 
         //!send the response
@@ -39,6 +40,7 @@ const userCtr = {
             username: userCreated.username,
             email:userCreated.email,
             id:userCreated._id,
+            role: userCreated.role, // Include role in the response
         });
     }),
 
@@ -60,9 +62,10 @@ const userCtr = {
         }
 
         //generate a token
-        const token = jwt.sign({ id: user._id }, "financeTrackerKey",{
-            expiresIn: "365d",
-        });
+        const token = jwt.sign({ id: user._id, role: user.role },
+            process.env.JWT_SECRET ,
+            { expiresIn: "365d",}
+        );
 
         //send the response
         res.json({
@@ -71,6 +74,7 @@ const userCtr = {
             id: user._id,
             email: user.email,
             username: user.username,
+            role: user.role, // Include role in the response
         });
 
     }),
@@ -79,13 +83,17 @@ const userCtr = {
         
         //find the user
         console.log(req.user);
-        const user=await User.findById(req.user);
+        const user=await User.findById(req.user.id);
         
         if(!user){
             throw new Error ("User not found");
         }
         //send the response
-        res.json({ username:user.username, email:user.email });
+        res.json({ 
+            username:user.username, 
+            email:user.email,
+            role: user.role,
+        });
     }),
 
     //!update password
@@ -93,7 +101,7 @@ const userCtr = {
         const {newPassword} = req.body;
 
         //find the user
-        const user =await User.findById(req.user);
+        const user =await User.findById(req.user.id);
         if(!user){
             throw new Error ("User not found");
         }
@@ -114,9 +122,11 @@ const userCtr = {
     updateUserProfile: asyncHandler(async (req, res)=>{
         const {email, username} = req.body;
 
-        const updatedUser = await User.findByIdAndUpdate(req.user, {
-            username,
-            email,
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id, 
+            {
+                username,
+                email,
         },{
             new:true,
         }
@@ -129,13 +139,13 @@ const userCtr = {
     //edits
 
     //! Get all users (Admin only)
-    getAllUsers: asyncHandler(async (req, res) => {
+    getAllUsersAdminOnly: asyncHandler(async (req, res) => {
         const users = await User.find({}).select("-password"); // Exclude passwords
         res.json(users);
     }),
 
     //! Delete a user (Admin only)
-    deleteUser: asyncHandler(async (req, res) => {
+    deleteUserAdminOnly: asyncHandler(async (req, res) => {
         const user = await User.findById(req.params.id);
         if (!user) {
             throw new Error("User not found");

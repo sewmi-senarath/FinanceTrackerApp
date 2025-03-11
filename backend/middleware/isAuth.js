@@ -31,7 +31,7 @@ const isAuthenticated = async (req, res, next) =>{
     //! Verify the token
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded.id; // Save the user ID in the request object
+        req.user = decoded; // Save the user ID in the request object
         next();
     } catch (err) {
         const error = new Error("Token expired or invalid. Please login again.");
