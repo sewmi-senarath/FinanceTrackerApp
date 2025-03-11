@@ -3,3 +3,25 @@ node_modules/
 
 #ignore .env file
 .env
+
+# Build artifacts
+dist/
+build/
+out/
+
+# IDE/Editor files
+.vscode/
+.idea/
+.DS_Store
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Large files
+*.zip
+*.tar.gz

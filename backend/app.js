@@ -4,11 +4,12 @@ const userRouter = require("./routes/userRouter");
 const errorHandler = require("./middleware/errorHandlerMiddleware");
 const categoryRouter = require("./routes/categoryRouter");
 const transactionRouter = require("./routes/transactionRouter");
+require('dotenv').config();
 const app = express();
 
 //!connect to MongoDB
 mongoose
-    .connect("mongodb+srv://sewmisenarath:vqNR2YhfP39Rf1RT@cluster2.jr9ix.mongodb.net/FinanceTracker")
+    .connect(process.env.MONGODB_URI)
     .then(() => console.log("MongoDB connected"))
     .catch((e) =>console.log(e));
 
