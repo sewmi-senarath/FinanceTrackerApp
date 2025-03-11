@@ -47,6 +47,9 @@ const userSchema = new mongoose.Schema(
             enum: ["admin", "user"], // Define valid roles
             default: "user", // Default role is "user"
         },
+        currency: { 
+            type: String, 
+            default: "Rs" }, // Add currency field
     },
     {
         timestamps: true,

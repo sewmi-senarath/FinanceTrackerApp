@@ -13,16 +13,17 @@ const categoryCtr = {
 
         //convert the name to lowercase
         const normalizedName = name.toLowerCase();
+
         //check if type is valid
         const validTypes = ['income' ,'expense'];
-
         if(!validTypes.includes(type.toLowerCase())){
             throw new Error("Invalid category type: " + type);
         }
+
         //check if category already exists on the user account
         const categoryExists = await Category.findOne({
             name: normalizedName, 
-            user:req.user,
+            user:req.user.id,
         });
         if(categoryExists){
             throw new Error(`Category ${categoryExists.name} already exists`);
@@ -31,7 +32,7 @@ const categoryCtr = {
         //create the category
         const category = await Category.create({
             name: normalizedName,
-            user: req.user,
+            user: req.user.id,
             type,
         });
 
@@ -41,7 +42,7 @@ const categoryCtr = {
     //!lists
     lists: asyncHandler(async(req,res)=>{
         const categories = await Category.find({
-            user: req.user
+            user: req.user.id,
         });
         res.status(200).json(categories);
     }),
@@ -50,9 +51,14 @@ const categoryCtr = {
         const {categoryId} = req.params;
         const {type , name} = req.body;
         const normalizedName = name.toLowerCase();
-        const category = await Category.findById(categoryId);
 
-        if(!category && category.user.toString() !== req.user.toString()){
+        //find category
+        const category = await Category.findOne({
+            _id: categoryId,
+            user: req.user.id,
+        });
+
+        if (!category) {
             throw new Error("Category not found or User not authenticated");
         }
 
@@ -67,7 +73,7 @@ const categoryCtr = {
         if (oldName !== updatedCategory.name){
             await Transaction.updateMany(
             {
-                user: req.user,
+                user: req.user.id,
                 category: oldName,
             },
             { $set:{ category: updatedCategory.name }}
@@ -78,24 +84,26 @@ const categoryCtr = {
 
     //!delete
     delete: asyncHandler(async (req, res)=>{
-        const category = await Category.findById(req.params.id);
+        // Find the category
+        const category = await Category.findOne({
+            _id: req.params.id,
+            user: req.user.id, 
+        });
 
-        if(category && category.user.toString() === req.user.toString()){
-
-            //update transactions that have this category
-            const defaultCategory = "Uncategorized";
-            await Transaction.updateMany(
-                { user: req.user, category: category.name },
-                { $set: {category: defaultCategory }}
-            );
-
-            //remove category
-            await Category.findByIdAndDelete(req.params.id);
-            res.json({ message: "category removed successfully" });
-        }else{
-            res.json({ message: "category not found or user not authorized" });
+        if (!category) {
+            throw new Error("Category not found or User not authorized");
         }
+            
+        //update transactions that have this category
+        const defaultCategory = "Uncategorized";
+        await Transaction.updateMany(
+            { user: req.user.id, category: category.name }, // Use only the user ID (ObjectId)
+            { $set: { category: defaultCategory } }
+        );
 
+        // Remove category
+        await Category.findByIdAndDelete(req.params.id);
+        res.json({ message: "Category removed successfully" });
     }),
 
     //! Get all categories (Admin only)

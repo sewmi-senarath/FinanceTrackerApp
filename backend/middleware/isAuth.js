@@ -5,25 +5,6 @@ const isAuthenticated = async (req, res, next) =>{
     const headerObj = req.headers;
     const token = headerObj?.authorization?.split(' ')[1]
     
-    //!verify the token
-    // const verifyToken = jwt.verify(token, "financeTrackerKey",(err, decoded)=>{
-    //     console.log(decoded);
-    //     if (err){
-    //         return false;
-    //     } else{
-    //         return decoded;
-    //     }
-    // });
-
-    // if(verifyToken){
-    //     //*save the user req obj
-    //     req.user = verifyToken.id;
-    //     next();
-    // } else{
-    //     const err = new Error("Token expired, login again");
-    //     next(err);
-    // }
-
     if (!token) {
         return res.status(401).json({ message: "Access denied. No token provided." });
     }

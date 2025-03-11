@@ -10,7 +10,7 @@ require('dotenv').config();
 const userCtr = {
     //!Register
     register: asyncHandler(async(req, res) =>{
-        const{username, email, password, role} = req.body;
+        const{username, email, password, role, currency} = req.body;
         
         //!validate
         if(!username || !email || !password){
@@ -20,7 +20,7 @@ const userCtr = {
         //!check if user exists
         const userExists = await User.findOne({ email });
         if (userExists){
-            throw new Error("User already exists"); 
+            throw new Error("User already exists");
         }
 
         //!Hash the user password
@@ -33,6 +33,7 @@ const userCtr = {
             username,
             password: hashedPassword,
             role: role || "user", // Default to "user" if role is not provided
+            currency: currency || "USD",
         });
 
         //!send the response
@@ -41,6 +42,7 @@ const userCtr = {
             email:userCreated.email,
             id:userCreated._id,
             role: userCreated.role, // Include role in the response
+            currency: userCreated.currency,
         });
     }),
 
@@ -120,13 +122,14 @@ const userCtr = {
 
     //!update user profile
     updateUserProfile: asyncHandler(async (req, res)=>{
-        const {email, username} = req.body;
+        const {email, username, currency} = req.body;
 
         const updatedUser = await User.findByIdAndUpdate(
             req.user.id, 
             {
                 username,
                 email,
+                currency
         },{
             new:true,
         }
