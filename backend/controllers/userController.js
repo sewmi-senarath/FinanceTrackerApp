@@ -109,6 +109,7 @@ const userCtr = {
         //send the response
         res.json({ message:"Password changed successfully" });
     }),
+
     //!update user profile
     updateUserProfile: asyncHandler(async (req, res)=>{
         const {email, username} = req.body;
@@ -122,6 +123,25 @@ const userCtr = {
     );
         //send the response
         res.json({ message:"User Profile updated successfully", updatedUser});
+    }),
+
+
+    //edits
+
+    //! Get all users (Admin only)
+    getAllUsers: asyncHandler(async (req, res) => {
+        const users = await User.find({}).select("-password"); // Exclude passwords
+        res.json(users);
+    }),
+
+    //! Delete a user (Admin only)
+    deleteUser: asyncHandler(async (req, res) => {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            throw new Error("User not found");
+        }
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: "User deleted successfully" });
     }),
 
 };

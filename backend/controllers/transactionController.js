@@ -83,6 +83,22 @@ const transactionCtr = {
         }
     }),
 
+    //! Get all transactions (Admin only)
+    getAllTransactions: asyncHandler(async (req, res) => {
+        const transactions = await Transaction.find({});
+        res.json(transactions);
+    }),
+
+    //! Delete any transaction (Admin only)
+    deleteTransaction: asyncHandler(async (req, res) => {
+        const transaction = await Transaction.findById(req.params.id);
+        if (!transaction) {
+            throw new Error("Transaction not found");
+        }
+        await Transaction.findByIdAndDelete(req.params.id);
+        res.json({ message: "Transaction deleted successfully" });
+    }),
+
 };
 
 module.exports = transactionCtr;

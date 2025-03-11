@@ -98,6 +98,22 @@ const categoryCtr = {
 
     }),
 
+    //! Get all categories (Admin only)
+    getAllCategories: asyncHandler(async (req, res) => {
+        const categories = await Category.find({});
+        res.json(categories);
+    }),
+
+    //! Delete any category (Admin only)
+    deleteCategory: asyncHandler(async (req, res) => {
+        const category = await Category.findById(req.params.id);
+        if (!category) {
+            throw new Error("Category not found");
+        }
+        await Category.findByIdAndDelete(req.params.id);
+        res.json({ message: "Category deleted successfully" });
+    }),
+
 };
 
 module.exports = categoryCtr;
