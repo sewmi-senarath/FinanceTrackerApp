@@ -46,11 +46,18 @@ const categoryCtr = {
         });
         res.status(200).json(categories);
     }),
+
     //!update
     update: asyncHandler(async(req, res)=>{
         const {categoryId} = req.params;
         const {type , name} = req.body;
         const normalizedName = name.toLowerCase();
+
+        // Check if at least one field is provided
+        if (!name && !type) {
+            res.status(400);
+            throw new Error("At least one field (name or type) is required");
+        }
 
         //find category
         const category = await Category.findOne({
@@ -62,24 +69,30 @@ const categoryCtr = {
             throw new Error("Category not found or User not authenticated");
         }
 
-        const oldName = category.name;
-
-        //update category properties
-        category.name = normalizedName || category.name;
-        category.type = type || category.type;
-        const updatedCategory = await category.save();
-        
-        //update affected transactions
-        if (oldName !== updatedCategory.name){
-            await Transaction.updateMany(
-            {
-                user: req.user.id,
-                category: oldName,
-            },
-            { $set:{ category: updatedCategory.name }}
-            );
+        // Update the category name (if provided)
+        if (name) {
+            category.name = name.toLowerCase();
         }
-        res.json(updatedCategory);
+
+        // Update the category type (if provided)
+        if (type) {
+            if (!["income", "expense"].includes(type)) {
+                res.status(400);
+                throw new Error("Invalid category type. Must be 'income' or 'expense'");
+            }
+            category.type = type;
+        }
+
+        // Check if at least one field (name or type) was provided
+        if (!name && !type) {
+            res.status(400);
+            throw new Error("At least one field is required");
+        }
+
+        //save the updated category
+        await category.save();
+
+        res.json(category);
     }),
 
     //!delete

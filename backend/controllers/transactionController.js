@@ -3,6 +3,8 @@ const Category = require("../model/Category");
 const Transaction = require("../model/Transaction");
 const User = require("../model/User");
 const {getExchangeRate} = require("../utils/exchangeRate");
+const Goal = require("../model/Goal");
+const checkBudgetUsage = require("../triggers/checkBudgetUsage");
 
 const transactionCtr = {
     //!add
@@ -22,6 +24,26 @@ const transactionCtr = {
             currency,
             description,
         });
+
+        //!Trigger budget usage check
+        await checkBudgetUsage(
+            req.user.id, 
+            category,
+            amount
+        );
+
+        //!If the transaction is an income, allocate savings to goals
+        if (type === "income") {
+            const goals = await Goal.find({ user: req.user.id });
+
+            for (const goal of goals) {
+                if (goal.allocationPercentage > 0) {
+                    const allocatedAmount = (amount * goal.allocationPercentage) / 100;
+                    goal.savedAmount += allocatedAmount;
+                    await goal.save();
+                }
+            }
+        }
 
         res.status(201).json(transaction);
     }),
@@ -88,19 +110,19 @@ const transactionCtr = {
         }
 
         // Update the transaction
-    transaction.type = req.body.type || transaction.type;
-    transaction.category = req.body.category || transaction.category;
-    transaction.amount = req.body.amount || transaction.amount;
-    transaction.currency = req.body.currency || transaction.currency;
-    transaction.date = req.body.date || transaction.date;
-    transaction.description = req.body.description || transaction.description;
+        transaction.type = req.body.type || transaction.type;
+        transaction.category = req.body.category || transaction.category;
+        transaction.amount = req.body.amount || transaction.amount;
+        transaction.currency = req.body.currency || transaction.currency;
+        transaction.date = req.body.date || transaction.date;
+        transaction.description = req.body.description || transaction.description;
 
-    // Save the updated transaction
-    const updatedTransaction = await transaction.save();
+        // Save the updated transaction
+        const updatedTransaction = await transaction.save();
 
-    res.json(updatedTransaction);
-        
-    }),
+        res.json(updatedTransaction);
+            
+        }),
 
     //!delete
     delete: asyncHandler(async (req, res)=>{
