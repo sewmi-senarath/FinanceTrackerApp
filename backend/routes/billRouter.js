@@ -6,28 +6,28 @@ const router = express.Router();
 
 // Create a new bill
 router.post(
-    "/api/v1/bills/add", 
+    "/add", 
     isAuthenticated, 
     billController.createBill
 );
 
 // Get all bills for the logged-in user
 router.get(
-    "/api/v1/bills/lists", 
+    "/lists", 
     isAuthenticated, 
     billController.getBills
 );
 
 // Update a bill
 router.put(
-    "/api/v1/bills/update/:id", 
+    "/update/:id", 
     isAuthenticated, 
     billController.updateBill
 );
 
 // Delete a bill
 router.delete(
-    "/api/v1/bills/delete/:id", 
+    "/delete/:id", 
     isAuthenticated, 
     billController.deleteBill
 );

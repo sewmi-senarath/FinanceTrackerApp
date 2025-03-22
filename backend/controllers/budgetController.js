@@ -15,11 +15,20 @@ const budgetCtr = {
             endDate 
         } = req.body;
 
-        //!Check if the category is provided as a name or ID
-        let categoryId = category;
+        // Validate required fields
+        if (!category || !amount || !currency) {
+            res.status(400);
+            throw new Error("Category, amount, and currency are required");
+        }
 
-        //!If category is a name, find the corresponding category ID
-        if (typeof category === "string" && !mongoose.Types.ObjectId.isValid(category)) {
+        //!Check if the category is provided as a name or ID
+        let categoryId;
+
+        if (mongoose.Types.ObjectId.isValid(category)) {
+            // If category is a valid ObjectId, use it directly
+            categoryId = category;
+        } else {
+            // If category is a name, find the corresponding category ID
             const categoryDoc = await Category.findOne({ 
                 name: category.toLowerCase(), 
                 user: req.user.id 
@@ -34,7 +43,7 @@ const budgetCtr = {
         }
 
         //!check if the category exists
-        const categoryExists = await Category.findById(category);
+        const categoryExists = await Category.findById(categoryId);
         if (!categoryExists) {
             res.status(404);
             throw new Error("Use an existing category");
@@ -42,7 +51,7 @@ const budgetCtr = {
 
         const budget = await Budget.create({
             user: req.user.id,
-            category, //!store the category ID
+            category: categoryId, // Store the category ID (ObjectId)
             amount,
             currency,
             period,
@@ -83,12 +92,27 @@ const budgetCtr = {
 
         //!check if the new category exists
         if (category) {
-            const categoryExists = await Category.findById(category);
+            let categoryId;
+            if (mongoose.Types.ObjectId.isValid(category)) {
+                categoryId = category;
+            } else {
+                const categoryDoc = await Category.findOne({
+                    name: category.toLowerCase(),
+                    user: req.user.id,
+                });
+                if (!categoryDoc) {
+                    res.status(404);
+                    throw new Error("Category not found");
+                }
+                categoryId = categoryDoc._id;
+            }
+
+            const categoryExists = await Category.findById(categoryId);
             if (!categoryExists) {
                 res.status(404);
                 throw new Error("Category not found");
             }
-            budget.category = category;
+            budget.category = categoryId;
         }
 
         budget.amount = amount || budget.amount;

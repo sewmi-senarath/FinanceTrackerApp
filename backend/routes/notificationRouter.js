@@ -6,14 +6,14 @@ const router = express.Router();
 
 //! Get all notifications for the logged-in user
 router.get(
-    "/api/v1/notify/lists", 
+    "/lists", 
     isAuthenticated, 
     notificationController.getNotifications
 );
 
 //! Mark a notification as read
 router.put(
-    "/api/v1/notify/:id/markRead", 
+    "/:id/markRead", 
     isAuthenticated, 
     notificationController.markAsRead
 );

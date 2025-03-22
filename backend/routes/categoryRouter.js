@@ -5,25 +5,25 @@ const categoryCtr = require("../controllers/categoryController");
 const categoryRouter = express.Router();
 
 //!add
-categoryRouter.post("/api/v1/categories/create",
+categoryRouter.post("/create",
     isAuthenticated, 
     categoryCtr.create
 );
 
 //!lists
-categoryRouter.get("/api/v1/categories/lists", 
+categoryRouter.get("/lists", 
     isAuthenticated,
     categoryCtr.lists
 );
 
 //!update
-categoryRouter.put("/api/v1/categories/update/:categoryId", 
+categoryRouter.put("/update/:categoryId", 
     isAuthenticated,
     categoryCtr.update
 );
 
 //!delete
-categoryRouter.delete("/api/v1/categories/delete/:id", 
+categoryRouter.delete("/delete/:id", 
     isAuthenticated,
     categoryCtr.delete
 );

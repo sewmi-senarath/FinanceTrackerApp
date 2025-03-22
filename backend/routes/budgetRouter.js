@@ -6,28 +6,28 @@ const budgetRouter = express.Router();
 
 //!create budget
 budgetRouter.post(
-    "/api/v1/budgets/create",
+    "/create",
     isAuthenticated,
     budgetController.createBudget
 );
 
 //!get budget
 budgetRouter.get(
-    "/api/v1/budgets/lists",
+    "/lists",
     isAuthenticated,
     budgetController.getBudgets
 );
 
 //!update
 budgetRouter.put(
-    "/api/v1/budgets/update/:id",
+    "/update/:id",
     isAuthenticated,
     budgetController.updateBudget
 );
 
 //!delete 
 budgetRouter.delete(
-    "/api/v1/budgets/delete/:id",
+    "/delete/:id",
     isAuthenticated,
     budgetController.deleteBudget
 );

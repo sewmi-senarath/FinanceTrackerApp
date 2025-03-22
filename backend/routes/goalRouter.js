@@ -6,28 +6,28 @@ const router = express.Router();
 
 //! Create a new goal
 router.post(
-    "/api/v1/goals/create", 
+    "/create", 
     isAuthenticated, 
     goalController.createGoal
 );
 
 //! Get all goals for the logged-in user
 router.get(
-    "/api/v1/goals/lists", 
+    "/lists", 
     isAuthenticated, 
     goalController.getGoals
 );
 
 //! Update a goal
 router.put(
-    "/api/v1/goals/update/:id", 
+    "/update/:id", 
     isAuthenticated, 
     goalController.updateGoal
 );
 
 //! Delete a goal
 router.delete(
-    "/api/v1/goals/delete/:id", 
+    "/delete/:id", 
     isAuthenticated, 
     goalController.deleteGoal);
 

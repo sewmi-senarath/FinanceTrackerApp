@@ -1,41 +1,52 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const userRouter = require("./routes/userRouter");
-const errorHandler = require("./middleware/errorHandlerMiddleware");
-const categoryRouter = require("./routes/categoryRouter");
-const transactionRouter = require("./routes/transactionRouter");
-const goalRouter = require("./routes/goalRouter");
-const notificationRouter = require("./routes/notificationRouter");
+const express = require('express');
+const mongoose = require('mongoose');
+const userRouter = require('./routes/userRouter');
+const errorHandler = require('./middleware/errorHandlerMiddleware');
+const categoryRouter = require('./routes/categoryRouter');
+const transactionRouter = require('./routes/transactionRouter');
+const goalRouter = require('./routes/goalRouter');
+const notificationRouter = require('./routes/notificationRouter');
+const billRouter = require('./routes/billRouter');
+const budgetRouter = require('./routes/budgetRouter');
 const Scheduler = require("./scheduler");
-const billRouter = require("./routes/billRouter");
-const budgetRouter = require("./routes/budgetRouter");
 require('dotenv').config();
+
 const app = express();
 
-//!connect to MongoDB
+//! Connect to MongoDB
 mongoose
-    .connect(process.env.MONGODB_URI)
-    .then(() => console.log("MongoDB connected"))
-    .catch((e) =>console.log(e));
+  .connect(process.env.MONGODB_URI)
+  .then(() => {
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('MongoDB connected');
+    }
+  })
+  .catch((e) => {
+    console.error('MongoDB connection error:', e);
+  });
 
-//!middleware
-app.use(express.json()) //*pass incoming json data
+//! Middleware
+app.use(express.json()); // Parse incoming JSON data
 
-//!Routes
-app.use("/",userRouter);
-app.use("/",categoryRouter);
-app.use("/",transactionRouter);
-app.use("/", goalRouter);
-app.use("/",notificationRouter);
-app.use("/",billRouter);
-app.use("/",budgetRouter);
+//! Routes
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/categories", categoryRouter);
+app.use("/api/v1/transactions", transactionRouter);
+app.use("/api/v1/goals", goalRouter);
+app.use("/api/v1/notifications", notificationRouter);
+app.use("/api/v1/bills", billRouter);
+app.use("/api/v1/budgets", budgetRouter);
 
-//!error
+//! Error handler
 app.use(errorHandler);
 
-//!start the server
+//! Start the server
 const PORT = process.env.PORT || 8000;
-app.listen(PORT,
-    () => console.log(`Server is running on PORT ${PORT}...!`)
-);
+const server = app.listen(PORT, () => {
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(`Server is running on PORT ${PORT}...!`);
+  }
+});
 
+//!export app for testing
+module.exports = {app, server};

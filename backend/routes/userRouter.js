@@ -5,29 +5,29 @@ const isAdmin = require("../middleware/isAdmin");
 const userRouter = express.Router();
 
 //!register
-userRouter.post("/api/v1/users/register", 
+userRouter.post("/register", 
     userCtr.register
 );
 
 //!login
-userRouter.post("/api/v1/users/login", 
+userRouter.post("/login", 
     userCtr.login
 );
 
 //!profile
-userRouter.get("/api/v1/users/profile", 
+userRouter.get("/profile", 
     isAuthenticated, 
     userCtr.profile
 );
 
 //!update password
-userRouter.put("/api/v1/users/changePassword", 
+userRouter.put("/changePassword", 
     isAuthenticated, 
     userCtr.changeUserPassword
 );
 
 //!update profile
-userRouter.put("/api/v1/users/updateProfile", 
+userRouter.put("/updateProfile", 
     isAuthenticated, 
     userCtr.updateUserProfile
 );
@@ -35,7 +35,7 @@ userRouter.put("/api/v1/users/updateProfile",
 //?ADMIN ONLY ROUTERS
 //!Get all users (Admin only)
 userRouter.get(
-    "/api/v1/admin/users",
+    "/admin/getUsers",
     isAuthenticated,
     isAdmin, // Only admins can access this route
     userCtr.getAllUsersAdminOnly
@@ -43,11 +43,10 @@ userRouter.get(
 
 //!Delete a user (Admin only)
 userRouter.delete(
-    "/api/v1/admin/users/delete/:id",
+    "/admin/delete/:id",
     isAuthenticated,
     isAdmin, // Only admins can access this route
     userCtr.deleteUserAdminOnly
 );
-
 
 module.exports = userRouter;
